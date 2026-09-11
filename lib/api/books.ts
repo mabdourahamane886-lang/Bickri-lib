@@ -7,12 +7,21 @@ const demoBooks: Book[] = [
   {id:"demo-3",title:"Entreprendre à l'ère digitale",author:"Bickri Lib",description:"Principes pratiques pour développer un projet digital.",cover_url:"https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=700&q=80",created_at:"2026-01-03T00:00:00.000Z"},
 ];
 
-export async function getBooks(): Promise<Book[]> {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) return demoBooks;
+export async function getBooks(query = ""): Promise<Book[]> {
+  const normalized = query.trim();
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
+    if (!normalized) return demoBooks;
+    return demoBooks.filter(book => `${book.title} ${book.author ?? ""} ${book.description ?? ""}`.toLowerCase().includes(normalized.toLowerCase()));
+  }
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.from("books").select("id,title,author,description,cover_url,created_at").order("created_at", { ascending: false });
-    if (error) return demoBooks;
-    return (data as Book[]) || demoBooks;
-  } catch { return demoBooks; }
+    let request = supabase.from("books").select("id,title,author,description,cover_url,created_at").order("created_at", { ascending: false });
+    if (normalized) {
+      const safeQuery = normalized.replace(/[%_,]/g, " ").trim();
+      request = request.or(`title.ilike.%${safeQuery}%,author.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%`);
+    }
+    const { data, error } = await request;
+    if (error) return normalized ? [] : demoBooks;
+    return (data as Book[]) || [];
+  } catch { return normalized ? [] : demoBooks; }
 }
