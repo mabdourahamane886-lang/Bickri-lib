@@ -2,12 +2,16 @@
 
 import { FormEvent, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+
+function getNextPath() {
+  if (typeof window === "undefined") return "/dashboard";
+  const value = new URLSearchParams(window.location.search).get("next");
+  return value?.startsWith("/") ? value : "/dashboard";
+}
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const next = searchParams.get("next")?.startsWith("/") ? searchParams.get("next")! : "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,7 +25,7 @@ export default function LoginPage() {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) setError(error.message);
-      else router.push(next);
+      else router.push(getNextPath());
     } catch {
       setError("Le service de connexion est temporairement indisponible.");
     } finally {
@@ -37,6 +41,6 @@ export default function LoginPage() {
       {error && <p role="alert" className="form-message">{error}</p>}
       <button className="btn btn-dark" disabled={loading} type="submit">{loading ? "Connexion…" : "Se connecter"}</button>
     </form>
-    <p>Pas encore de compte ? <a href={`/register?next=${encodeURIComponent(next)}`}>Créer un compte</a></p>
+    <p>Pas encore de compte ? <a href="/register">Créer un compte</a></p>
   </div></main>;
 }
