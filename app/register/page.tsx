@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import SocialAuthButtons from "@/components/auth/social-auth-buttons";
 
 function getNextPath() {
   if (typeof window === "undefined") return "/dashboard";
@@ -41,9 +43,9 @@ export default function RegisterPage() {
     }
   }
 
-  return <main className="container" style={{ padding: "64px 0" }}><div className="card" style={{ maxWidth: 480, margin: "auto" }}>
+  return <main className="container" style={{ padding: "64px 0" }}><div className="card" style={{ maxWidth: 520, margin: "auto" }}>
     <h1>Créer un compte</h1>
-    <p className="muted">Après l'inscription, votre espace personnel vous permet de voir et gérer vos informations, vos favoris et votre bibliothèque.</p>
+    <p className="muted">Créez votre espace personnel pour retrouver vos informations, vos favoris et votre bibliothèque.</p>
     <form onSubmit={submit} style={{ display: "grid", gap: 14 }}>
       <input required type="text" minLength={2} placeholder="Nom complet" value={name} onChange={e => setName(e.target.value)} />
       <input required type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
@@ -51,6 +53,7 @@ export default function RegisterPage() {
       {error && <p role="alert" className="form-message">{error}</p>}
       <button className="btn btn-dark" disabled={loading} type="submit">{loading ? "Création…" : "Créer mon compte"}</button>
     </form>
-    <p>Déjà inscrit ? <a href="/login">Se connecter</a></p>
+    <SocialAuthButtons next={getNextPath()} />
+    <p>Déjà inscrit ? <Link href="/login">Se connecter</Link></p>
   </div></main>;
 }
