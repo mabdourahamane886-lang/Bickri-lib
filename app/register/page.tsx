@@ -12,6 +12,7 @@ function getNextPath() {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,7 +24,13 @@ export default function RegisterPage() {
     setError("");
     try {
       const supabase = createClient();
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: name.trim() },
+        },
+      });
       if (error) setError(error.message);
       else if (data.session) router.push(getNextPath());
       else setError("Compte créé. Vérifiez votre adresse e-mail pour terminer l'inscription.");
@@ -36,7 +43,9 @@ export default function RegisterPage() {
 
   return <main className="container" style={{ padding: "64px 0" }}><div className="card" style={{ maxWidth: 480, margin: "auto" }}>
     <h1>Créer un compte</h1>
+    <p className="muted">Après l'inscription, votre espace personnel vous permet de voir et gérer vos informations, vos favoris et votre bibliothèque.</p>
     <form onSubmit={submit} style={{ display: "grid", gap: 14 }}>
+      <input required type="text" minLength={2} placeholder="Nom complet" value={name} onChange={e => setName(e.target.value)} />
       <input required type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
       <input required minLength={8} type="password" placeholder="Mot de passe (8 caractères minimum)" value={password} onChange={e => setPassword(e.target.value)} />
       {error && <p role="alert" className="form-message">{error}</p>}
