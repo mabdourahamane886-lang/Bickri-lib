@@ -2,12 +2,16 @@
 
 import { FormEvent, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+
+function getNextPath() {
+  if (typeof window === "undefined") return "/dashboard";
+  const value = new URLSearchParams(window.location.search).get("next");
+  return value?.startsWith("/") ? value : "/dashboard";
+}
 
 export default function RegisterPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const next = searchParams.get("next")?.startsWith("/") ? searchParams.get("next")! : "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,7 +25,7 @@ export default function RegisterPage() {
       const supabase = createClient();
       const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) setError(error.message);
-      else if (data.session) router.push(next);
+      else if (data.session) router.push(getNextPath());
       else setError("Compte créé. Vérifiez votre adresse e-mail pour terminer l'inscription.");
     } catch {
       setError("Le service d'inscription est temporairement indisponible.");
@@ -38,6 +42,6 @@ export default function RegisterPage() {
       {error && <p role="alert" className="form-message">{error}</p>}
       <button className="btn btn-dark" disabled={loading} type="submit">{loading ? "Création…" : "Créer mon compte"}</button>
     </form>
-    <p>Déjà inscrit ? <a href={`/login?next=${encodeURIComponent(next)}`}>Se connecter</a></p>
+    <p>Déjà inscrit ? <a href="/login">Se connecter</a></p>
   </div></main>;
 }
