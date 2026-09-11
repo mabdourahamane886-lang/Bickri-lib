@@ -2,10 +2,12 @@
 
 import { FormEvent, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next")?.startsWith("/") ? searchParams.get("next")! : "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -15,11 +17,17 @@ export default function RegisterPage() {
     event.preventDefault();
     setLoading(true);
     setError("");
-    const supabase = createClient();
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) setError(error.message);
-    else router.push("/dashboard");
-    setLoading(false);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) setError(error.message);
+      else if (data.session) router.push(next);
+      else setError("Compte créé. Vérifiez votre adresse e-mail pour terminer l'inscription.");
+    } catch {
+      setError("Le service d'inscription est temporairement indisponible.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return <main className="container" style={{ padding: "64px 0" }}><div className="card" style={{ maxWidth: 480, margin: "auto" }}>
@@ -27,9 +35,9 @@ export default function RegisterPage() {
     <form onSubmit={submit} style={{ display: "grid", gap: 14 }}>
       <input required type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
       <input required minLength={8} type="password" placeholder="Mot de passe (8 caractères minimum)" value={password} onChange={e => setPassword(e.target.value)} />
-      {error && <p role="alert">{error}</p>}
-      <button disabled={loading} type="submit">{loading ? "Création…" : "Créer mon compte"}</button>
+      {error && <p role="alert" className="form-message">{error}</p>}
+      <button className="btn btn-dark" disabled={loading} type="submit">{loading ? "Création…" : "Créer mon compte"}</button>
     </form>
-    <p>Déjà inscrit ? <a href="/login">Se connecter</a></p>
+    <p>Déjà inscrit ? <a href={`/login?next=${encodeURIComponent(next)}`}>Se connecter</a></p>
   </div></main>;
 }
