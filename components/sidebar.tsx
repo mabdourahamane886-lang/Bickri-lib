@@ -1,16 +1,17 @@
 "use client";
 
-import { BookOpen, Heart, Home, LogOut, Menu, Search, UserRound, X } from "lucide-react";
+import { BookOpen, Heart, Home, Menu, Search, UserRound, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { LogoutButton } from "@/components/auth/logout-button";
 
 const links = [
   { label: "Accueil", href: "/", icon: Home },
   { label: "Bibliothèque", href: "/books", icon: BookOpen },
   { label: "Rechercher", href: "/books", icon: Search },
   { label: "Mes favoris", href: "/dashboard", icon: Heart },
-  { label: "Mon profil", href: "/dashboard", icon: UserRound },
+  { label: "Mon profil", href: "/profile", icon: UserRound },
 ];
 
 export default function Sidebar() {
@@ -27,7 +28,7 @@ export default function Sidebar() {
       <nav className="nav">
         {links.map(({label,href,icon:Icon}) => { const active = href === "/" ? pathname === "/" : pathname.startsWith(href); return <Link key={label} href={href} className={active ? "active" : ""} onClick={() => setOpen(false)}><Icon size={18}/>{label}</Link>; })}
       </nav>
-      <div className="sidebar-footer"><Link href="/dashboard">Aide et support</Link><Link href="/login"><LogOut size={17} style={{verticalAlign:"middle",marginRight:8}}/>Connexion</Link></div>
+      <div className="sidebar-footer"><Link href="/dashboard">Aide et support</Link><LogoutButton /></div>
     </aside>
   </>;
 }
