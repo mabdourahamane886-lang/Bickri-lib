@@ -1,14 +1,17 @@
-import { UserRound, Mail, ShieldCheck } from "lucide-react";
+import { UserRound, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Sidebar from "@/components/sidebar";
 import MobileNavigation from "@/components/mobile-navigation";
 import { LogoutButton } from "@/components/auth/logout-button";
+import ProfileForm from "@/components/profile/profile-form";
 
 export default async function ProfilePage() {
   const client = await createClient();
   const { data: { user } } = await client.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/login?next=/profile");
+
+  const initialName = typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : "";
 
   return (
     <div className="shell">
@@ -20,7 +23,7 @@ export default async function ProfilePage() {
             <div>
               <p className="eyebrow" style={{ color: "#9a6b0e", margin: 0 }}>Mon profil</p>
               <h1>Mon espace</h1>
-              <p className="muted" style={{ margin: "5px 0" }}>Gérez votre compte et vos préférences.</p>
+              <p className="muted" style={{ margin: "5px 0" }}>Gérez réellement vos informations de compte.</p>
             </div>
             <LogoutButton />
           </div>
@@ -31,19 +34,10 @@ export default async function ProfilePage() {
                 <div className="feature-icon"><UserRound size={25} /></div>
                 <div>
                   <h2 style={{ margin: 0, color: "#071a33" }}>Informations du compte</h2>
-                  <p className="muted" style={{ margin: "5px 0 0" }}>Vos informations personnelles</p>
+                  <p className="muted" style={{ margin: "5px 0 0" }}>Ces informations sont liées à votre compte.</p>
                 </div>
               </div>
-              <div className="grid grid-2">
-                <div className="card" style={{ background: "#f8fafc", boxShadow: "none" }}>
-                  <p className="eyebrow" style={{ margin: 0 }}>Adresse e-mail</p>
-                  <p style={{ fontWeight: 700, marginBottom: 0 }}>{user.email ?? "Non renseigné"}</p>
-                </div>
-                <div className="card" style={{ background: "#f8fafc", boxShadow: "none" }}>
-                  <p className="eyebrow" style={{ margin: 0 }}>Statut</p>
-                  <p style={{ fontWeight: 700, marginBottom: 0 }}>Compte actif</p>
-                </div>
-              </div>
+              <ProfileForm initialName={initialName} email={user.email ?? "Non renseigné"} />
             </div>
           </section>
 
@@ -52,12 +46,12 @@ export default async function ProfilePage() {
               <div className="card">
                 <ShieldCheck size={24} color="#d09a32" />
                 <h3 style={{ color: "#071a33" }}>Compte sécurisé</h3>
-                <p className="muted">Votre espace personnel est protégé et accessible uniquement après connexion.</p>
+                <p className="muted">Votre espace personnel nécessite une authentification avant l'accès.</p>
               </div>
               <div className="card">
-                <Mail size={24} color="#d09a32" />
-                <h3 style={{ color: "#071a33" }}>Identité de connexion</h3>
-                <p className="muted">Utilisez votre adresse e-mail pour accéder à votre bibliothèque personnelle.</p>
+                <UserRound size={24} color="#d09a32" />
+                <h3 style={{ color: "#071a33" }}>Profil personnalisé</h3>
+                <p className="muted">Votre nom est enregistré dans votre compte et peut être modifié à tout moment.</p>
               </div>
             </div>
           </section>
