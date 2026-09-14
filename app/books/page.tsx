@@ -10,6 +10,12 @@ import { searchExternalBooks } from "@/lib/api/external-books";
 const levels = ["", "CI", "CP", "CE1", "CE2", "CM1", "CM2", "6e", "5e", "4e", "3e", "Seconde", "1ère", "Tle", "Collège", "Lycée", "Université", "Tous niveaux"];
 const categories = ["", "Scolaire", "Roman", "Contes", "Éducation", "Formation", "Examens", "Université", "Archives"];
 
+const mobileStyles = `
+  @media(max-width: 900px){
+    .integrated-sources-block{display:none !important}
+  }
+`;
+
 export default async function BooksPage({ searchParams }: { searchParams: Promise<{ q?: string; level?: string; category?: string; subject?: string }> }) {
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
@@ -22,7 +28,7 @@ export default async function BooksPage({ searchParams }: { searchParams: Promis
     query.length >= 2 ? searchExternalBooks(query) : Promise.resolve([]),
   ]);
 
-  return <div className="shell"><Sidebar/><MobileNavigation/><main className="page-main"><div className="container">
+  return <div className="shell"><style dangerouslySetInnerHTML={{ __html: mobileStyles }} /><Sidebar/><MobileNavigation/><main className="page-main"><div className="container">
     <div className="topbar"><div><p className="eyebrow" style={{color:"#9a6b0e",margin:0}}>Catalogue scolaire & lecture</p><h1>Bibliothèque</h1><p className="muted" style={{margin:"5px 0 0"}}>Primaire, collège, lycée, université, formations et examens.</p></div><Link href="/dashboard" className="btn btn-dark">Mon espace</Link></div>
     <form action="/books" method="get" className="searchbar"><Search size={20} color="#64748b"/><input name="q" defaultValue={query} placeholder="Rechercher un livre, un auteur, une matière..."/><button className="btn btn-gold" style={{padding:"10px 16px"}} type="submit">Rechercher</button></form>
     <form action="/books" method="get" className="filter-row" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:12,marginTop:14}}>
@@ -42,7 +48,7 @@ export default async function BooksPage({ searchParams }: { searchParams: Promis
 
     {externalBooks.length > 0 && <section className="section"><div className="section-head"><div><p className="eyebrow" style={{color:"#9a6b0e",margin:0}}>Recherche multi-sources</p><h2><Globe2 size={20} style={{verticalAlign:"-3px",marginRight:7}}/>Ressources externes</h2><p className="muted" style={{margin:"5px 0 0"}}>{externalBooks.length} résultats issus de plusieurs catalogues publics et académiques.</p></div></div><div className="book-grid">{externalBooks.map(book=><ExternalBookCard key={book.id} book={book}/>)}</div></section>}
 
-    <div className="card section" style={{background:"#071a33",color:"white"}}><h2 style={{margin:"0 0 8px"}}>Sources intégrées</h2><p style={{margin:0,color:"#cbd5e1",lineHeight:1.6}}>Bickri Lib interroge son catalogue Supabase et complète les recherches avec Google Books, Open Library, OpenAlex et Internet Archive.</p></div>
+    <div className="card section integrated-sources-block" style={{background:"#071a33",color:"white"}}><h2 style={{margin:"0 0 8px"}}>Sources intégrées</h2><p style={{margin:0,color:"#cbd5e1",lineHeight:1.6}}>Bickri Lib interroge son catalogue Supabase et complète les recherches avec Google Books, Open Library, OpenAlex et Internet Archive.</p></div>
     <footer className="footer">Bickri Lib · Lecture, apprentissage et ressources numériques.</footer>
   </div></main></div>;
 }
