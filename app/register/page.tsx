@@ -14,6 +14,7 @@ function getNextPath() {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const nextPath = getNextPath();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +29,6 @@ export default function RegisterPage() {
 
     const cleanName = name.trim();
     const cleanEmail = email.trim().toLowerCase();
-    const nextPath = getNextPath();
 
     if (cleanName.length < 2) return setError("Veuillez saisir votre nom complet.");
     if (password.length < 8) return setError("Le mot de passe doit contenir au moins 8 caractères.");
