@@ -18,8 +18,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState(false);
-  const [resent, setResent] = useState(false);
   const needsConfirmation = useMemo(() => /email not confirmed|confirm.*email|not confirmed/i.test(error), [error]);
 
   async function submit(event: FormEvent) {
@@ -27,13 +25,11 @@ export default function LoginPage() {
     if (loading) return;
     setLoading(true);
     setError("");
-    setResent(false);
     try {
       const supabase = createClient();
       const { error: authError } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
-      if (authError) {
-        setError(authError.message);
-      } else {
+      if (authError) setError(authError.message);
+      else {
         router.replace(getNextPath());
         router.refresh();
       }
@@ -44,38 +40,17 @@ export default function LoginPage() {
     }
   }
 
-  async function resendConfirmation() {
-    const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail || resending) return;
-    setResending(true);
-    setError("");
-    try {
-      const supabase = createClient();
-      const { error: resendError } = await supabase.auth.resend({
-        type: "signup",
-        email: cleanEmail,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(getNextPath())}` },
-      });
-      if (resendError) setError(resendError.message);
-      else setResent(true);
-    } catch {
-      setError("Impossible de renvoyer l'e-mail de confirmation pour le moment.");
-    } finally {
-      setResending(false);
-    }
-  }
-
   return <main className="container" style={{ padding: "64px 0" }}><div className="card" style={{ maxWidth: 520, margin: "auto" }}>
     <p className="eyebrow" style={{ color: "#9a6b0e" }}>Bickri Lib</p>
     <h1>Connexion</h1>
     <p className="muted">Accédez à votre espace personnel Bickri Lib.</p>
     <form onSubmit={submit} style={{ display: "grid", gap: 14 }}>
-      <input required type="email" placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)} />
-      <input required type="password" placeholder="Mot de passe" value={password} onChange={e => setPassword(e.target.value)} />
+      <input required type="email" autoComplete="email" placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)} />
+      <input required type="password" autoComplete="current-password" placeholder="Mot de passe" value={password} onChange={e => setPassword(e.target.value)} />
       {error && <p role="alert" className="error-message">{error}</p>}
-      {resent && <p role="status" className="success-message">E-mail de confirmation renvoyé. Vérifiez votre boîte de réception et vos spams.</p>}
       <button className="btn btn-dark" disabled={loading} type="submit">{loading ? "Connexion…" : "Se connecter"}</button>
-      {needsConfirmation && <button type="button" className="btn btn-light" onClick={resendConfirmation} disabled={resending}>{resending ? "Envoi…" : "Renvoyer l’e-mail de confirmation"}</button>}
+      {needsConfirmation && <p className="muted" style={{ margin: 0 }}>Cette version crée automatiquement les nouveaux comptes comme confirmés. Pour un ancien compte non confirmé, utilisez le lien de confirmation reçu précédemment.</p>}
+      <Link href={`/forgot-password?email=${encodeURIComponent(email.trim().toLowerCase())}`} className="muted" style={{ textAlign: "right" }}>Mot de passe oublié ?</Link>
     </form>
     <SocialAuthButtons next={getNextPath()} />
     <p>Pas encore de compte ? <Link href={`/register?next=${encodeURIComponent(getNextPath())}`}>Créer un compte</Link></p>
