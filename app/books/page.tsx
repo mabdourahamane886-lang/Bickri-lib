@@ -44,11 +44,10 @@ export default async function BooksPage({ searchParams }: { searchParams: Promis
     </form>
 
     <div className="section-head" style={{marginTop:30}}><div><h2>{query || level || category || subject ? "Ressources Bickri Lib" : "Livres disponibles"}</h2><p className="muted" style={{margin:"5px 0 0"}}>{books.length} ressource{books.length>1?"s":""} locale{books.length>1?"s":""}.</p></div><span className="muted" style={{display:"flex",gap:6,alignItems:"center",fontSize:13}}><Sparkles size={16}/> Catalogue Bickri</span></div>
-    {books.length ? <div className="book-grid">{books.map(book=><BookCard key={book.id} book={book}/>)}</div> : <div className="card" style={{textAlign:"center",padding:"40px 20px"}}><h2 style={{color:"#071a33"}}>Aucune ressource locale</h2><p className="muted">Les sources externes peuvent quand même proposer des résultats ci-dessous.</p></div>}
+    {books.length ? <div className="book-grid">{books.map(book=><BookCard key={book.id} book={book}/>)}</div> : <div className="card" style={{textAlign:"center",padding:"40px 20px"}}><h2 style={{color:"#071a33"}}>Aucune ressource locale</h2><p className="muted">Les résultats disponibles sont présentés ci-dessous.</p></div>}
 
-    {externalBooks.length > 0 && <section className="section"><div className="section-head"><div><p className="eyebrow" style={{color:"#9a6b0e",margin:0}}>Recherche multi-sources</p><h2><Globe2 size={20} style={{verticalAlign:"-3px",marginRight:7}}/>Ressources externes</h2><p className="muted" style={{margin:"5px 0 0"}}>{externalBooks.length} résultats issus de plusieurs catalogues publics et académiques.</p></div></div><div className="book-grid">{externalBooks.map(book=><ExternalBookCard key={book.id} book={book}/>)}</div></section>}
+    {externalBooks.length > 0 && <section className="section"><div className="section-head"><div><p className="eyebrow" style={{color:"#9a6b0e",margin:0}}>Recherche multi-sources</p><h2><Globe2 size={20} style={{verticalAlign:"-3px",marginRight:7}}/>Ressources externes</h2><p className="muted" style={{margin:"5px 0 0"}}>{externalBooks.length} résultats disponibles.</p></div></div><div className="book-grid">{externalBooks.map(book=><ExternalBookCard key={book.id} book={book}/>)}</div></section>}
 
-    <div className="card section integrated-sources-block" style={{background:"#071a33",color:"white"}}><h2 style={{margin:"0 0 8px"}}>Sources intégrées</h2><p style={{margin:0,color:"#cbd5e1",lineHeight:1.6}}>Bickri Lib interroge son catalogue Supabase et complète les recherches avec Google Books, Open Library, OpenAlex et Internet Archive.</p></div>
     <footer className="footer">Bickri Lib · Lecture, apprentissage et ressources numériques.</footer>
   </div></main></div>;
 }
