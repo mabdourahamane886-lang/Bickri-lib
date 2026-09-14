@@ -49,16 +49,15 @@ export default function RegisterPage() {
         return;
       }
 
-      if (result?.session?.access_token && result?.session?.refresh_token) {
-        const supabase = createClient();
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: result.session.access_token,
-          refresh_token: result.session.refresh_token,
-        });
-        if (sessionError) {
-          setError("Le compte a été créé, mais la connexion automatique a échoué. Connectez-vous avec vos identifiants.");
-          return;
-        }
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+      });
+
+      if (signInError) {
+        setError("Le compte a été créé, mais la connexion automatique a échoué. Connectez-vous avec vos identifiants.");
+        return;
       }
 
       router.replace(nextPath);
