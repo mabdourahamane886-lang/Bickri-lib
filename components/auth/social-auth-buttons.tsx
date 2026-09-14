@@ -3,16 +3,14 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-type Provider = "google" | "facebook" | "github" | "apple" | "azure";
+type Provider = "google" | "facebook" | "apple";
 
 type SocialAuthButtonsProps = { next?: string; mode?: "signin" | "link" };
 
 const providers: Array<{ id: Provider; label: string; mark: string }> = [
   { id: "google", label: "Google", mark: "G" },
   { id: "facebook", label: "Facebook", mark: "f" },
-  { id: "github", label: "GitHub", mark: "⌘" },
   { id: "apple", label: "Apple", mark: "" },
-  { id: "azure", label: "Microsoft", mark: "M" },
 ];
 
 export default function SocialAuthButtons({ next = "/dashboard", mode = "signin" }: SocialAuthButtonsProps) {
