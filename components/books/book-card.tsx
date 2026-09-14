@@ -46,6 +46,23 @@ export default function BookCard({ book }: { book: Book }) {
 
   return <>
     <style jsx>{`
+      .cover {
+        height: auto;
+        aspect-ratio: 3 / 4;
+        overflow: hidden;
+      }
+      .cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center center;
+        display: block;
+      }
+      @media (max-width: 900px) {
+        .cover {
+          aspect-ratio: 3 / 4;
+        }
+      }
       @media (max-width: 640px) {
         .book-card {
           width: 100%;
@@ -53,8 +70,9 @@ export default function BookCard({ book }: { book: Book }) {
           border-radius: 16px;
         }
         .cover {
-          height: 230px;
+          height: auto;
           aspect-ratio: 3 / 4;
+          min-height: 0;
         }
         .book-body {
           padding: 14px;
