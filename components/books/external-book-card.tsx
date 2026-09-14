@@ -7,7 +7,6 @@ const sourceLabels: Record<ExternalBook['source'], string> = {
   open_library: 'Open Library',
   openalex: 'OpenAlex',
   internet_archive: 'Internet Archive',
-  openstax: 'OpenStax',
 };
 
 export default function ExternalBookCard({ book }: { book: ExternalBook }) {
