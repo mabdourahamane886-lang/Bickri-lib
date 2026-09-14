@@ -39,6 +39,11 @@ export async function getBooks(query = "", level = "", category = "", subject = 
 }
 
 export async function getBookById(id: string): Promise<Book | null> {
+  // Keep the demo catalogue navigable when Supabase is not configured.
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
+    return demoBooks.find(book => book.id === id) ?? null;
+  }
+
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.from("books").select("id,title,author,description,cover_url,level,subject,category,language,is_premium,published_year,file_path,file_type,file_size,page_count,license,source_url,publisher,isbn,reading_time,download_enabled,view_count,created_at,updated_at").eq("id", id).maybeSingle();
