@@ -16,8 +16,11 @@ export default async function BooksPage({ searchParams }: { searchParams: Promis
   const level = params.level?.trim() ?? "";
   const category = params.category?.trim() ?? "";
   const subject = params.subject?.trim() ?? "";
-  const books = await getBooks(query, level, category, subject);
-  const externalBooks = query.length >= 2 && !level && !category && !subject ? await searchExternalBooks(query) : [];
+
+  const [books, externalBooks] = await Promise.all([
+    getBooks(query, level, category, subject),
+    query.length >= 2 ? searchExternalBooks(query) : Promise.resolve([]),
+  ]);
 
   return <div className="shell"><Sidebar/><MobileNavigation/><main className="page-main"><div className="container">
     <div className="topbar"><div><p className="eyebrow" style={{color:"#9a6b0e",margin:0}}>Catalogue scolaire & lecture</p><h1>Bibliothèque</h1><p className="muted" style={{margin:"5px 0 0"}}>Primaire, collège, lycée, université, formations et examens.</p></div><Link href="/dashboard" className="btn btn-dark">Mon espace</Link></div>
@@ -39,7 +42,7 @@ export default async function BooksPage({ searchParams }: { searchParams: Promis
 
     {externalBooks.length > 0 && <section className="section"><div className="section-head"><div><p className="eyebrow" style={{color:"#9a6b0e",margin:0}}>Recherche multi-sources</p><h2><Globe2 size={20} style={{verticalAlign:"-3px",marginRight:7}}/>Ressources externes</h2><p className="muted" style={{margin:"5px 0 0"}}>{externalBooks.length} résultats issus de plusieurs catalogues publics et académiques.</p></div></div><div className="book-grid">{externalBooks.map(book=><ExternalBookCard key={book.id} book={book}/>)}</div></section>}
 
-    <div className="card section" style={{background:"#071a33",color:"white"}}><h2 style={{margin:"0 0 8px"}}>Sources intégrées</h2><p style={{margin:0,color:"#cbd5e1",lineHeight:1.6}}>Bickri Lib interroge son catalogue Supabase et peut compléter les recherches avec Google Books, Open Library, OpenAlex, Internet Archive et OpenStax.</p></div>
+    <div className="card section" style={{background:"#071a33",color:"white"}}><h2 style={{margin:"0 0 8px"}}>Sources intégrées</h2><p style={{margin:0,color:"#cbd5e1",lineHeight:1.6}}>Bickri Lib interroge son catalogue Supabase et complète les recherches avec Google Books, Open Library, OpenAlex et Internet Archive.</p></div>
     <footer className="footer">Bickri Lib · Lecture, apprentissage et ressources numériques.</footer>
   </div></main></div>;
 }
