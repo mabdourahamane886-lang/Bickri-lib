@@ -42,17 +42,17 @@ export default function LoginPage() {
 
   return <main className="container" style={{ padding: "64px 0" }}><div className="card" style={{ maxWidth: 520, margin: "auto" }}>
     <p className="eyebrow" style={{ color: "#9a6b0e" }}>Bickri Lib</p>
-    <h1>Connexion</h1>
-    <p className="muted">Accédez à votre espace personnel Bickri Lib.</p>
+    <h1>Connexion à votre compte</h1>
+    <p className="muted">Connectez-vous à votre compte Bickri Lib existant pour retrouver votre espace personnel.</p>
     <form onSubmit={submit} style={{ display: "grid", gap: 14 }}>
-      <input required type="email" autoComplete="email" placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)} />
+      <input required type="email" autoComplete="email" placeholder="E-mail de votre compte" value={email} onChange={e => setEmail(e.target.value)} />
       <input required type="password" autoComplete="current-password" placeholder="Mot de passe" value={password} onChange={e => setPassword(e.target.value)} />
       {error && <p role="alert" className="error-message">{error}</p>}
-      <button className="btn btn-dark" disabled={loading} type="submit">{loading ? "Connexion…" : "Se connecter"}</button>
-      {needsConfirmation && <p className="muted" style={{ margin: 0 }}>Cette version crée automatiquement les nouveaux comptes comme confirmés. Pour un ancien compte non confirmé, utilisez le lien de confirmation reçu précédemment.</p>}
+      <button className="btn btn-dark" disabled={loading} type="submit">{loading ? "Connexion…" : "Se connecter à mon compte"}</button>
+      {needsConfirmation && <p className="muted" style={{ margin: 0 }}>Ce compte existant doit encore être confirmé par e-mail avant la connexion.</p>}
       <Link href={`/forgot-password?email=${encodeURIComponent(email.trim().toLowerCase())}`} className="muted" style={{ textAlign: "right" }}>Mot de passe oublié ?</Link>
     </form>
     <SocialAuthButtons next={getNextPath()} />
-    <p>Pas encore de compte ? <Link href={`/register?next=${encodeURIComponent(getNextPath())}`}>Créer un compte</Link></p>
+    <p style={{ marginTop: 18 }}>Vous n’avez pas encore de compte ? <Link href={`/register?next=${encodeURIComponent(getNextPath())}`}>Créer un compte</Link></p>
   </div></main>;
 }
