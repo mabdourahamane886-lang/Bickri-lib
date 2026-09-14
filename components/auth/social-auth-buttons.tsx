@@ -59,7 +59,6 @@ export default function SocialAuthButtons({ next = "/dashboard", mode = "signin"
         ))}
       </div>
       {error && <p role="alert" className="form-message">{error}</p>}
-      <p className="social-note">Les fournisseurs doivent être activés et configurés dans Supabase Auth avant de fonctionner.</p>
     </div>
   );
 }
