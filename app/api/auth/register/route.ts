@@ -22,8 +22,9 @@ export async function POST(request: NextRequest) {
 
     const admin = createAdminClient();
     if (!admin) {
+      console.error("Bickri Lib registration server config missing: SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY");
       return NextResponse.json(
-        { error: "La configuration sécurisée de l'inscription n'est pas disponible sur le serveur." },
+        { error: "Le serveur d'inscription n'est pas encore configuré. Ajoutez la clé serveur Supabase dans les variables d'environnement Vercel." },
         { status: 500 },
       );
     }
