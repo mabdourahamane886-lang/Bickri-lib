@@ -24,6 +24,8 @@ const LIMIT = 8;
 const MAX_RESULTS = 40;
 const CACHE_TTL_MS = 60 * 60 * 1000;
 
+type CacheRecord = { results: ExternalBook[]; fresh: boolean };
+
 function cleanText(value: unknown, max = 700): string | null {
   if (typeof value !== "string") return null;
   const text = value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -73,7 +75,6 @@ async function searchGoogleBooks(query: string): Promise<ExternalBook[]> {
   url.searchParams.set("orderBy", "relevance");
   const key = process.env.GOOGLE_BOOKS_API_KEY;
   if (key) url.searchParams.set("key", key);
-
   const data = await fetchJson(url.toString());
   return Array.isArray(data?.items) ? data.items.map((item: any) => {
     const info = item?.volumeInfo || {};
@@ -107,7 +108,6 @@ async function searchOpenLibrary(query: string): Promise<ExternalBook[]> {
   url.searchParams.set("limit", String(LIMIT));
   url.searchParams.set("lang", "fr");
   url.searchParams.set("fields", "key,title,author_name,first_publish_year,cover_i,isbn,subject,publisher,language,ebook_access,public_scan_b");
-
   const data = await fetchJson(url.toString());
   return Array.isArray(data?.docs) ? data.docs.map((item: any) => {
     const access = item?.ebook_access;
@@ -141,7 +141,6 @@ async function searchOpenAlex(query: string): Promise<ExternalBook[]> {
   url.searchParams.set("select", "id,title,publication_year,authorships,primary_location,open_access,best_oa_location,type");
   if (process.env.OPENALEX_API_KEY) url.searchParams.set("api_key", process.env.OPENALEX_API_KEY);
   if (process.env.OPENALEX_EMAIL) url.searchParams.set("mailto", process.env.OPENALEX_EMAIL);
-
   const data = await fetchJson(url.toString());
   return Array.isArray(data?.results) ? data.results.map((item: any) => {
     const authors = Array.isArray(item?.authorships) ? item.authorships.map((a: any) => a?.author?.display_name).filter(Boolean).slice(0, 4).join(", ") : null;
@@ -176,7 +175,6 @@ async function searchInternetArchive(query: string): Promise<ExternalBook[]> {
   url.searchParams.set("rows", String(LIMIT));
   url.searchParams.set("page", "1");
   url.searchParams.set("output", "json");
-
   const data = await fetchJson(url.toString());
   return Array.isArray(data?.response?.docs) ? data.response.docs.map((item: any) => {
     const identifier = item?.identifier;
@@ -207,31 +205,27 @@ async function searchOpenStax(query: string): Promise<ExternalBook[]> {
   });
   const books = Array.isArray(data) ? data : Array.isArray(data?.books) ? data.books : [];
   const terms = normalizeQuery(query).split(" ").filter(Boolean);
-
-  return books
-    .filter((item: any) => {
-      const haystack = normalizeQuery(`${item?.title || ""} ${item?.name || ""} ${item?.subject || ""} ${item?.description || ""}`);
-      return terms.every(term => haystack.includes(term));
-    })
-    .slice(0, LIMIT)
-    .map((item: any) => ({
-      id: `openstax:${item?.id || item?.uuid || item?.slug || crypto.randomUUID()}`,
-      title: cleanText(item?.title || item?.name, 220) || "Sans titre",
-      author: cleanText(item?.authors || item?.author, 180),
-      description: cleanText(item?.description),
-      cover_url: item?.cover_image || item?.image || null,
-      level: "Université",
-      subject: cleanText(item?.subject, 120),
-      category: "Formation",
-      language: "en",
-      published_year: yearFrom(item?.published || item?.updated_at),
-      publisher: "OpenStax",
-      isbn: null,
-      source: "openstax" as const,
-      source_url: item?.web_url || item?.url || "https://openstax.org/",
-      access_type: "full" as const,
-      download_url: item?.web_url || item?.url || null,
-    }));
+  return books.filter((item: any) => {
+    const haystack = normalizeQuery(`${item?.title || ""} ${item?.name || ""} ${item?.subject || ""} ${item?.description || ""}`);
+    return terms.every(term => haystack.includes(term));
+  }).slice(0, LIMIT).map((item: any) => ({
+    id: `openstax:${item?.id || item?.uuid || item?.slug || crypto.randomUUID()}`,
+    title: cleanText(item?.title || item?.name, 220) || "Sans titre",
+    author: cleanText(item?.authors || item?.author, 180),
+    description: cleanText(item?.description),
+    cover_url: item?.cover_image || item?.image || null,
+    level: "Université",
+    subject: cleanText(item?.subject, 120),
+    category: "Formation",
+    language: "en",
+    published_year: yearFrom(item?.published || item?.updated_at),
+    publisher: "OpenStax",
+    isbn: null,
+    source: "openstax" as const,
+    source_url: item?.web_url || item?.url || "https://openstax.org/",
+    access_type: "full" as const,
+    download_url: item?.web_url || item?.url || null,
+  }));
 }
 
 function scoreBook(book: ExternalBook, query: string) {
@@ -250,28 +244,20 @@ function scoreBook(book: ExternalBook, query: string) {
 
 function deduplicateAndRank(books: ExternalBook[], query: string) {
   const seen = new Set<string>();
-  return books
-    .filter(book => {
-      const fingerprint = `${normalizeQuery(book.title)}|${normalizeQuery(book.author || "")}`;
-      if (seen.has(fingerprint)) return false;
-      seen.add(fingerprint);
-      return true;
-    })
-    .sort((a, b) => scoreBook(b, query) - scoreBook(a, query))
-    .slice(0, MAX_RESULTS);
+  return books.filter(book => {
+    const fingerprint = `${normalizeQuery(book.title)}|${normalizeQuery(book.author || "")}`;
+    if (seen.has(fingerprint)) return false;
+    seen.add(fingerprint);
+    return true;
+  }).sort((a, b) => scoreBook(b, query) - scoreBook(a, query)).slice(0, MAX_RESULTS);
 }
 
-async function readCache(query: string): Promise<ExternalBook[] | null> {
+async function readCache(query: string): Promise<CacheRecord | null> {
   const supabase = createAdminClient();
   if (!supabase) return null;
-  const { data } = await supabase
-    .from("library_search_cache")
-    .select("results,expires_at")
-    .eq("normalized_query", normalizeQuery(query))
-    .gt("expires_at", new Date().toISOString())
-    .maybeSingle();
-  if (!data?.results) return null;
-  return Array.isArray(data.results) ? (data.results as ExternalBook[]) : null;
+  const { data } = await supabase.from("library_search_cache").select("results,expires_at").eq("normalized_query", normalizeQuery(query)).maybeSingle();
+  if (!data?.results || !Array.isArray(data.results)) return null;
+  return { results: data.results as ExternalBook[], fresh: new Date(data.expires_at).getTime() > Date.now() };
 }
 
 async function writeCache(query: string, results: ExternalBook[]) {
@@ -293,7 +279,7 @@ export async function searchExternalBooks(query: string): Promise<ExternalBook[]
   if (q.length < 2) return [];
 
   const cached = await readCache(q);
-  if (cached) return cached;
+  if (cached?.fresh) return cached.results;
 
   const results = await Promise.allSettled([
     searchGoogleBooks(q),
@@ -304,11 +290,19 @@ export async function searchExternalBooks(query: string): Promise<ExternalBook[]
   ]);
 
   const merged: ExternalBook[] = [];
+  let successfulSources = 0;
   for (const result of results) {
-    if (result.status === "fulfilled") merged.push(...result.value);
+    if (result.status === "fulfilled") {
+      successfulSources += 1;
+      merged.push(...result.value);
+    }
   }
 
   const finalResults = deduplicateAndRank(merged, q);
-  await writeCache(q, finalResults);
-  return finalResults;
+  if (finalResults.length > 0 || successfulSources > 0) {
+    await writeCache(q, finalResults);
+    return finalResults;
+  }
+
+  return cached?.results || [];
 }
