@@ -7,10 +7,10 @@ type Provider = "google" | "facebook" | "apple";
 
 type SocialAuthButtonsProps = { next?: string; mode?: "signin" | "link" };
 
-const providers: Array<{ id: Provider; label: string; mark: string }> = [
-  { id: "google", label: "Google", mark: "G" },
-  { id: "facebook", label: "Facebook", mark: "f" },
-  { id: "apple", label: "Apple", mark: "" },
+const providers: Array<{ id: Provider; label: string; logo: string; alt: string }> = [
+  { id: "google", label: "Google", logo: "https://cdn.simpleicons.org/google", alt: "Logo Google" },
+  { id: "facebook", label: "Facebook", logo: "https://cdn.simpleicons.org/facebook/1877F2", alt: "Logo Facebook" },
+  { id: "apple", label: "Apple", logo: "https://cdn.simpleicons.org/apple/000000", alt: "Logo Apple" },
 ];
 
 export default function SocialAuthButtons({ next = "/dashboard", mode = "signin" }: SocialAuthButtonsProps) {
@@ -36,9 +36,24 @@ export default function SocialAuthButtons({ next = "/dashboard", mode = "signin"
     <div className="social-auth">
       <div className="social-divider"><span>{mode === "link" ? "Ajouter un compte" : "ou continuer avec"}</span></div>
       <div className="social-grid">
-        {providers.map(provider => (
-          <button key={provider.id} type="button" className={`social-btn social-${provider.id}`} onClick={() => handle(provider.id)} disabled={!!loading}>
-            <span className="social-letter">{provider.mark}</span>
+        {providers.map((provider) => (
+          <button
+            key={provider.id}
+            type="button"
+            className={`social-btn social-${provider.id}`}
+            onClick={() => handle(provider.id)}
+            disabled={!!loading}
+            aria-label={`${mode === "link" ? "Ajouter" : "Continuer avec"} ${provider.label}`}
+          >
+            <img
+              src={provider.logo}
+              alt={provider.alt}
+              width={20}
+              height={20}
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              style={{ width: 20, height: 20, objectFit: "contain", flexShrink: 0 }}
+            />
             {loading === provider.id ? "Connexion…" : provider.label}
           </button>
         ))}
