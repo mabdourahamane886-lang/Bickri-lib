@@ -50,8 +50,36 @@ export default function ReaderClient({ book }: { book: Book }) {
 
   return (
     <div className="reader-page">
+      <style>{`
+        .reader-page .reader-mobile-style{display:none}
+        @media(max-width:700px){
+          .reader-topbar{padding:9px 10px;gap:7px;align-items:center}
+          .reader-topbar .btn{padding:9px 10px;border-radius:10px;font-size:11px;min-height:40px}
+          .reader-topbar .btn svg{width:15px;height:15px}
+          .reader-title{order:2;flex:1;max-width:none;width:auto;min-width:0;font-size:12px;gap:6px}
+          .reader-actions{gap:4px;flex:0 0 auto}
+          .reader-actions .btn{padding:8px;width:38px;min-width:38px;justify-content:center}
+          .reader-actions>span{font-size:10px;min-width:30px;text-align:center;color:#cbd5e1}
+          .reader-body{min-height:calc(100vh - 170px);padding:8px 6px;overflow:hidden;align-items:flex-start}
+          .reader-frame-wrap{width:100%;height:calc(100vh - 250px);min-height:420px;transform-origin:top center!important}
+          .reader-frame{width:100%;height:100%;border-radius:8px}
+          .reader-empty{width:100%;margin:12px 0;padding:22px 16px;border-radius:14px}
+          .reader-footer{padding:9px 10px 10px}
+          .reader-progress-label{font-size:10px;margin-bottom:5px}
+          .progress-track{height:5px}
+          .reader-progress-controls{margin-top:8px;gap:7px}
+          .reader-progress-controls input{width:100%;min-height:26px}
+          .reader-progress-controls .btn{width:100%;min-height:40px;padding:9px 10px;font-size:11px}
+        }
+        @media(max-width:430px){
+          .reader-topbar .btn span{display:none}
+          .reader-title span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+          .reader-frame-wrap{height:calc(100vh - 245px);min-height:380px}
+          .reader-progress-controls .btn{font-size:10px}
+        }
+      `}</style>
       <header className="reader-topbar">
-        <Link href={`/books/${book.id}`} className="btn"><ArrowLeft size={17}/> Retour</Link>
+        <Link href={`/books/${book.id}`} className="btn"><ArrowLeft size={17}/> <span>Retour</span></Link>
         <div className="reader-title"><BookOpen size={18}/><span>{book.title}</span></div>
         <div className="reader-actions">
           <button className="btn" onClick={() => setZoom(v => Math.max(70, v - 10))} aria-label="Réduire"><Minus size={16}/></button>
