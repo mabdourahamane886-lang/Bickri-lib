@@ -6,13 +6,10 @@ import { createClient } from "@/lib/supabase/client";
 const providers = [
   { id: "google", label: "Google", mark: "G" },
   { id: "facebook", label: "Facebook", mark: "f" },
-  { id: "github", label: "GitHub", mark: "⌘" },
   { id: "apple", label: "Apple", mark: "" },
-  { id: "azure", label: "Microsoft", mark: "M" },
 ] as const;
 
 type Provider = typeof providers[number]["id"];
-
 type Identity = { id: string; provider?: string | null; identity_data?: Record<string, unknown> | null };
 
 export default function IdentityConnections() {
@@ -92,7 +89,7 @@ export default function IdentityConnections() {
       {message && <p role="status" className="success-message">{message}</p>}
       {error && <p role="alert" className="error-message">{error}</p>}
       <p className="muted" style={{ marginTop: 14, fontSize: 13 }}>
-        L’ajout d’une identité OAuth doit être autorisé dans les réglages Auth de Supabase. Les fournisseurs sont gérés par Supabase Auth.
+        Ajoutez une méthode de connexion à votre compte actuel. Vos favoris, votre historique et votre profil restent sur le même compte.
       </p>
     </div>
   );
