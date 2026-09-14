@@ -25,8 +25,10 @@ export default function RegisterPage() {
     event.preventDefault();
     if (loading) return;
     setError("");
+
     const cleanName = name.trim();
     const cleanEmail = email.trim().toLowerCase();
+    const nextPath = getNextPath();
 
     if (cleanName.length < 2) return setError("Veuillez saisir votre nom complet.");
     if (password.length < 8) return setError("Le mot de passe doit contenir au moins 8 caractères.");
@@ -34,30 +36,33 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const supabase = createClient();
-      const emailRedirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(getNextPath())}`;
-      const { data, error: authError } = await supabase.auth.signUp({
-        email: cleanEmail,
-        password,
-        options: { emailRedirectTo, data: { full_name: cleanName } },
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: cleanName, email: cleanEmail, password }),
       });
 
-      if (authError) {
-        const message = authError.message.toLowerCase();
-        if (message.includes("already") || message.includes("registered")) {
-          setError("Cette adresse e-mail est déjà utilisée. Connectez-vous plutôt que de recréer un compte.");
-        } else {
-          setError(authError.message);
-        }
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setError(result?.error || "Impossible de créer le compte.");
         return;
       }
 
-      if (data.session) {
-        router.replace(getNextPath());
-        router.refresh();
-      } else {
-        router.replace(`/register/verify?email=${encodeURIComponent(cleanEmail)}&next=${encodeURIComponent(getNextPath())}`);
+      if (result?.session?.access_token && result?.session?.refresh_token) {
+        const supabase = createClient();
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: result.session.access_token,
+          refresh_token: result.session.refresh_token,
+        });
+        if (sessionError) {
+          setError("Le compte a été créé, mais la connexion automatique a échoué. Connectez-vous avec vos identifiants.");
+          return;
+        }
       }
+
+      router.replace(nextPath);
+      router.refresh();
     } catch {
       setError("Le service d'inscription est temporairement indisponible. Réessayez dans quelques instants.");
     } finally {
@@ -77,7 +82,7 @@ export default function RegisterPage() {
       {error && <p role="alert" className="error-message">{error}</p>}
       <button className="btn btn-dark" disabled={loading} type="submit">{loading ? "Création du compte…" : "Créer mon compte"}</button>
     </form>
-    <SocialAuthButtons next={getNextPath()} />
-    <p>Déjà inscrit ? <Link href={`/login?next=${encodeURIComponent(getNextPath())}`}>Se connecter</Link></p>
+    <SocialAuthButtons next={nextPath} />
+    <p>Déjà inscrit ? <Link href={`/login?next=${encodeURIComponent(nextPath)}`}>Se connecter</Link></p>
   </div></main>;
 }
