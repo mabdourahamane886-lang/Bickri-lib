@@ -28,14 +28,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: created, error: createError } = await admin.auth.admin.createUser({
+    const { data, error: createError } = await admin.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
       user_metadata: { full_name: name },
     });
 
-    if (createError || !created.user) {
+    if (createError || !data.user) {
       const message = createError?.message || "Impossible de créer le compte.";
       const lower = message.toLowerCase();
       if (lower.includes("already") || lower.includes("registered") || lower.includes("exists")) {
@@ -47,22 +47,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: message }, { status: 400 });
     }
 
-    const { data: signedIn, error: signInError } = await admin.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (signInError || !signedIn.session) {
-      console.error("Bickri Lib register sign-in error", signInError);
-      return NextResponse.json(
-        { error: "Le compte a été créé, mais la connexion automatique a échoué. Connectez-vous avec vos identifiants." },
-        { status: 201 },
-      );
-    }
-
     return NextResponse.json({
-      user: created.user,
-      session: signedIn.session,
+      success: true,
+      user: {
+        id: data.user.id,
+        email: data.user.email,
+      },
     });
   } catch (error) {
     console.error("Bickri Lib register error", error);
