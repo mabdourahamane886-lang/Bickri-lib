@@ -97,7 +97,7 @@ export default function RegisterPage() {
           <form onSubmit={submit} style={{ display: "grid", gap: 15 }}>
             <label style={{ display: "grid", gap: 7 }}>
               <span>Nom complet</span>
-              <input required type="text" minLength={2} placeholder="Ex. Mohamed Bickri Jr." value={name} onChange={e => setName(e.target.value)} autoComplete="name" />
+              <input required type="text" minLength={2} placeholder="Votre nom complet" value={name} onChange={e => setName(e.target.value)} autoComplete="name" />
             </label>
 
             <label style={{ display: "grid", gap: 7 }}>
